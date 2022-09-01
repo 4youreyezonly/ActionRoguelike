@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "VSK_Character.generated.h"
+class USpringArmComponent;
+class UCameraComponent;
+
 
 UCLASS()
 class ACTIONROGUELIKE_API AVSK_Character : public ACharacter
@@ -16,8 +19,17 @@ public:
 	AVSK_Character();
 
 protected:
+
+	UPROPERTY(VisibleAnywhere)
+	USpringArmComponent* SpringArmComp;
+
+	UPROPERTY(VisibleAnywhere)
+	UCameraComponent* CameraComp;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	void MoveForward(float value);
 
 public:	
 	// Called every frame
