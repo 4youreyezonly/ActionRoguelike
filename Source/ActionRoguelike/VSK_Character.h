@@ -18,12 +18,26 @@ class ACTIONROGUELIKE_API AVSK_Character : public ACharacter
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Attack")
-		TSubclassOf<AActor> ProjectileClass;
+		TSubclassOf<AActor> CommonProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+		TSubclassOf<AActor> UltimateProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+		TSubclassOf<AActor> TransProjectileClass;
 
 	UPROPERTY(EditAnywhere,Category = "Attack")
-		UAnimMontage* AttackAnim;
+		UAnimMontage* CommonAttackAnim;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+		UAnimMontage* UltimateAttackAnim;
+
 
 	FTimerHandle TimerHandle_PrimaryAttack;
+
+	FTimerHandle TimerHandle_UltimateAttack;
+
+	FTimerHandle TimerHandle_TransAttack;
 
 
 
@@ -49,13 +63,18 @@ protected:
 	void MoveForward(float value);
 	void MoveRight(float value);
 	void PrimaryAttack();
+	void PrimaryAttack_TimeElapsed();
+	void UltimateAttack();
+	void UltimateAttack_TimeElapsed();
+	void TransAttack();
+	void TransAttack_TimeElapsed();
+
 	//ÌøÔ¾¿ªÊ¼
 	void JumpStart();
 	//ÌøÔ¾½áÊø
 	void JumpEnd();
 
 	void PrimaryInteract();
-	void PrimaryAttack_TimeElapsed();
 
 public:
 	// Called every frame

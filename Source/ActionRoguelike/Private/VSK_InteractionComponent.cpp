@@ -54,14 +54,14 @@ void UVSK_InteractionComponent::PrimaryInteract()
 
 	TArray<FHitResult> Hits;
 
-	float Radius = 30.0f;
+	float Radius = 10.0f;
 
 	FCollisionShape Shape;
 	Shape.SetSphere(Radius);
 
 	bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits,EyeLocation,End,FQuat::Identity,ObjectQueryParams,Shape);
 
-   	FColor LineColor = bBlockingHit ? FColor::Red : FColor::Green;
+   	FColor LineColor = bBlockingHit ? FColor::Green: FColor::Red;
 
 	for (FHitResult Hit : Hits)
 	{

@@ -15,9 +15,9 @@ AVSK_ItemChest::AVSK_ItemChest()
 	LidMesh = CreateDefaultSubobject<UStaticMeshComponent>("LidMesh");
 	LidMesh->SetupAttachment(BaseMesh);
 
-	TargetPitch = 110;
-
+	TargetPitch = 110;																																			 
 }
+
 
 void AVSK_ItemChest::Interact_Implementation(APawn* InstigatorPawn)
 {
