@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "VSK_InteractionComponent.h"
 #include "DrawDebugHelpers.h"
+#include "VSK_AttributeComponent.h"	
 
 // Sets default values
 AVSK_Character::AVSK_Character()
@@ -23,11 +24,18 @@ AVSK_Character::AVSK_Character()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>("CameraComp");
 	CameraComp->SetupAttachment(SpringArmComp);
 
+	AttributeComp = CreateDefaultSubobject<UVSK_AttributeComponent>("AttributeComp");
+
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
 
 }
 
+void AVSK_Character::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	AttributeComp->OnHealthChanged.AddDynamic(this, &AVSK_Character::OnHealthChanged);
+}
 // Called when the game starts or when spawned
 void AVSK_Character::BeginPlay()
 {
@@ -356,4 +364,16 @@ void AVSK_Character::PrimaryInteract()
 		InterActionComp->PrimaryInteract();
 	}
 }
+
+void AVSK_Character::OnHealthChanged(AActor* InstigatorActor, UVSK_AttributeComponent* OwningComp, float NewHealth, float Delat)
+{
+	if (NewHealth <= 0.0f && Delat < 0.0f)
+	{
+		APlayerController* PC=Cast<APlayerController>(GetController());
+		DisableInput(PC);
+	}
+}
+
+
+
 

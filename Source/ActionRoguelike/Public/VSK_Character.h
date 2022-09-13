@@ -10,6 +10,7 @@ class UVSK_InteractionComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UAnimMontage;
+class UVSK_AttributeComponent;
 
 UCLASS()
 class ACTIONROGUELIKE_API AVSK_Character : public ACharacter
@@ -56,6 +57,10 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 		UVSK_InteractionComponent* InterActionComp;
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Components")
+		UVSK_AttributeComponent* AttributeComp;
+
+
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -75,6 +80,12 @@ protected:
 	void JumpEnd();
 
 	void PrimaryInteract();
+	
+	UFUNCTION()
+		void OnHealthChanged(AActor* InstigatorActor, UVSK_AttributeComponent* OwningComp, float NewHealth, float Delat);
+
+	virtual void PostInitializeComponents() override;
+
 
 public:
 	// Called every frame
