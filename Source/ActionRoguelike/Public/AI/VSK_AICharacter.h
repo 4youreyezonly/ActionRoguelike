@@ -5,6 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "VSK_AICharacter.generated.h"
+class UPawnSensingComponent;
+class UVSK_AttributeComponent;
+class UUserWidget;
+class UVSK_WorldUserWidget;
 
 UCLASS()
 class ACTIONROGUELIKE_API AVSK_AICharacter : public ACharacter
@@ -12,15 +16,34 @@ class ACTIONROGUELIKE_API AVSK_AICharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	AVSK_AICharacter();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
+	UVSK_WorldUserWidget* ActiveHealthBar;
+
+	UPROPERTY(EditDefaultsOnly,Category="UI")
+	TSubclassOf<UUserWidget> HealthBarWidgetClass;
+
+	void SetTargetActor(AActor* NewTarget);
+
+	virtual void PostInitializeComponents()override;
+
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+		UPawnSensingComponent* PawnSensingComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+		UVSK_AttributeComponent* AttributeComp;
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Info, meta = (AllowPrivateAccess = "true"))
+	//	class UWidgetComponent* WidgetComponent;
+
+	UFUNCTION()
+		void OnHealthChanged(AActor* InstigatorActor, UVSK_AttributeComponent* OwningComp, float NewHealth, float Delta);
+
+	UFUNCTION()
+		void OnPawnSeen(APawn* Pawn);
+
 	virtual void Tick(float DeltaTime) override;
 
 };

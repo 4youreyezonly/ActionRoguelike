@@ -7,6 +7,9 @@
 #include "VSK_AttributeComponent.h"
 #include "DrawDebugHelpers.h"
 #include "VSK_Character.h"
+#include "Kismet/GameplayStatics.h"
+#include "AI/VSK_AICharacter.h"
+#include "VSK_GameplayFunctionLibrary.h"
 
 
 // Sets default values
@@ -24,14 +27,25 @@ void AVSK_MagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedCompone
 	if (OtherActor&&OtherActor != GetInstigator())
 	{
 		UVSK_AttributeComponent* AttributeComp = Cast<UVSK_AttributeComponent>(OtherActor->GetComponentByClass(UVSK_AttributeComponent::StaticClass()));
-		if (AttributeComp)
+		if (UVSK_GameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
 		{
-			AttributeComp->ApplyHealthChange(-20.0f);
+			/*AttributeComp->ApplyHealthChange(GetInstigator(),-DamageAmount);*/
+
 			AVSK_Character* HitedCharacter = Cast<AVSK_Character>(OtherActor);
+			AVSK_AICharacter* HitedAICharacter = Cast<AVSK_AICharacter>(OtherActor);
 			if (HitedCharacter)
 			{
 				HitedCharacter->GetMesh()->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds);
+				UGameplayStatics::SpawnEmitterAtLocation(this, ExplodeFX,GetActorLocation(),GetActorRotation());
+
 			}
+			if (HitedAICharacter)
+			{
+				HitedAICharacter->GetMesh()->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds);
+				UGameplayStatics::SpawnEmitterAtLocation(this, ExplodeFX, GetActorLocation(), GetActorRotation());
+
+			}
+			UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
 			Destroy();
 		}
 	}

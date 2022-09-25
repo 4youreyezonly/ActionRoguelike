@@ -8,6 +8,8 @@
 #include "VSK_InteractionComponent.h"
 #include "DrawDebugHelpers.h"
 #include "VSK_AttributeComponent.h"	
+#include "VSK_ActionComponent.h"
+
 
 // Sets default values
 AVSK_Character::AVSK_Character()
@@ -24,7 +26,9 @@ AVSK_Character::AVSK_Character()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>("CameraComp");
 	CameraComp->SetupAttachment(SpringArmComp);
 
-	AttributeComp = CreateDefaultSubobject<UVSK_AttributeComponent>("AttributeComp");
+	AttributeComp = CreateDefaultSubobject<UVSK_AttributeComponent>("AttributeComp");	
+
+	ActionComp = CreateDefaultSubobject<UVSK_ActionComponent>("ActionComp");
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
@@ -69,6 +73,14 @@ void AVSK_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AVSK_Character::JumpStart);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AVSK_Character::JumpEnd);
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Released, this, &AVSK_Character::PrimaryInteract);
+
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &AVSK_Character::SprintStart);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &AVSK_Character::SprintStop);
+}
+
+void AVSK_Character::HealSelf(float Amount)
+{
+	AttributeComp->ApplyHealthChange(this, Amount/*=100*/);
 }
 
 void AVSK_Character::MoveForward(float value)
@@ -87,15 +99,13 @@ void AVSK_Character::MoveRight(float value)
 	ControlRot.Roll = 0.0f;
 
 	FVector RIghtVector = FRotationMatrix(ControlRot).GetScaledAxis(EAxis::Y);
-
+																 
 	AddMovementInput(RIghtVector, value);
 }
 //Ability
 void AVSK_Character::PrimaryAttack()
 {	
-	PlayAnimMontage(CommonAttackAnim);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &AVSK_Character::PrimaryAttack_TimeElapsed, 0.2f);
+	ActionComp->StartActionByName(this, "PrimaryAttack");
 
 }
 void AVSK_Character::UltimateAttack()
@@ -114,77 +124,78 @@ void AVSK_Character::TransAttack()
 }
 void AVSK_Character::PrimaryAttack_TimeElapsed()
 {
-	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+	//FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
 
-	FVector Start =GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
-	FVector End = Start+ GetControlRotation().Vector()*10000;
+	//FVector Start =GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
+	//FVector End = Start+ GetControlRotation().Vector()*10000;
 
-	FVector Look = End - Start;
-	FRotator FLook = Look.ToOrientationRotator();
+	//FVector Look = End - Start;
+	//FRotator FLook = Look.ToOrientationRotator();
 
 
-	//RayCheckSet
+	////RayCheckSet
 
-	FCollisionObjectQueryParams ObjectQueryParams;
-	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	//FCollisionObjectQueryParams ObjectQueryParams;
+	//ObjectQueryParams.AddObjectTypesToQuery(ECC_AIPawn);
+	//ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	//
 
-	/*FHitResult Hit;
-	bool bBlockingHit=GetWorld()->LineTraceSingleByObjectType(Hit, EyeLocation, End, ObjectQueryParams);*/
+	///*FHitResult Hit;
+	//bool bBlockingHit=GetWorld()->LineTraceSingleByObjectType(Hit, EyeLocation, End, ObjectQueryParams);*/
 
-	TArray<FHitResult> Hits;
+	//TArray<FHitResult> Hits;
 
-	float Radius = 30.0f;
+	//float Radius = 30.0f;
 
-	FCollisionShape Shape;
-	Shape.SetSphere(Radius);
+	//FCollisionShape Shape;
+	//Shape.SetSphere(Radius);
 
-	bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, Start, End, FQuat::Identity, ObjectQueryParams, Shape);
+	//bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, Start, End, FQuat::Identity, ObjectQueryParams, Shape);
 
-	FColor LineColor = bBlockingHit ? FColor::Green : FColor::Red;
+	//FColor LineColor = bBlockingHit ? FColor::Green : FColor::Red;
 
-	for (FHitResult Hit : Hits)
-	{
-		AActor* HitActor = Hit.GetActor();
-		if (bBlockingHit)
-		{
-			FVector HStart = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
-			FVector HEnd = /*HitActor->GetActorLocation()*/Hit.Location;
+	//for (FHitResult Hit : Hits)
+	//{
+	//	AActor* HitActor = Hit.GetActor();
+	//	if (bBlockingHit)
+	//	{
+	//		FVector HStart = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
+	//		FVector HEnd = /*HitActor->GetActorLocation()*/Hit.Location;
 
-			FVector HLook = HEnd - HandLocation;
-			FRotator RHLook = HLook.ToOrientationRotator();
+	//		FVector HLook = HEnd - HandLocation;
+	//		FRotator RHLook = HLook.ToOrientationRotator();
 
-			FTransform SpawnTM = FTransform(RHLook, HandLocation);
+	//		FTransform SpawnTM = FTransform(RHLook, HandLocation);
 
-			FActorSpawnParameters SpwanParams;
-																								
-			SpwanParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			SpwanParams.Instigator = this;
+	//		FActorSpawnParameters SpwanParams;
+	//																							
+	//		SpwanParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	//		SpwanParams.Instigator = this;
 
-			GetWorld()->SpawnActor<AActor>(CommonProjectileClass, SpawnTM, SpwanParams);
-			UE_LOG(LogTemp, Warning, TEXT("Hited"));
-			break;
-		}
-		
-	}
-	if (!bBlockingHit)
-	{
-		FVector HStart = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
-		FVector HEnd = Start + GetControlRotation().Vector() * 3000;
+	//		GetWorld()->SpawnActor<AActor>(CommonProjectileClass, SpawnTM, SpwanParams);
+	//		UE_LOG(LogTemp, Warning, TEXT("Hited"));
+	//		break;
+	//	}
+	//	
+	//}
+	//if (!bBlockingHit)
+	//{
+	//	FVector HStart = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
+	//	FVector HEnd = Start + GetControlRotation().Vector() * 3000;
 
-		FVector HLook = HEnd - HandLocation;
-		FRotator RHLook = HLook.ToOrientationRotator();
+	//	FVector HLook = HEnd - HandLocation;
+	//	FRotator RHLook = HLook.ToOrientationRotator();
 
-		FTransform SpawnTM = FTransform(RHLook, HandLocation);
+	//	FTransform SpawnTM = FTransform(RHLook, HandLocation);
 
-		FActorSpawnParameters SpwanParams;
+	//	FActorSpawnParameters SpwanParams;
 
-		SpwanParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpwanParams.Instigator = this;
+	//	SpwanParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	//	SpwanParams.Instigator = this;
 
-		GetWorld()->SpawnActor<AActor>(CommonProjectileClass, SpawnTM, SpwanParams);
-		UE_LOG(LogTemp, Warning, TEXT("Hits Nothing"));
-	}
+	//	GetWorld()->SpawnActor<AActor>(CommonProjectileClass, SpawnTM, SpwanParams);
+	//	UE_LOG(LogTemp, Warning, TEXT("Hits Nothing"));
+	//}
 
 
 
@@ -203,7 +214,7 @@ void AVSK_Character::UltimateAttack_TimeElapsed()
 	//RayCheckSet
 
 	FCollisionObjectQueryParams ObjectQueryParams;
-	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_AIPawn);
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
 
 	/*FHitResult Hit;
@@ -284,7 +295,7 @@ void AVSK_Character::TransAttack_TimeElapsed()
 	//RayCheckSet
 
 	FCollisionObjectQueryParams ObjectQueryParams;
-	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_AIPawn);
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
 
 	/*FHitResult Hit;
@@ -365,14 +376,29 @@ void AVSK_Character::PrimaryInteract()
 	}
 }
 
-void AVSK_Character::OnHealthChanged(AActor* InstigatorActor, UVSK_AttributeComponent* OwningComp, float NewHealth, float Delat)
+void AVSK_Character::OnHealthChanged(AActor* InstigatorActor, UVSK_AttributeComponent* OwningComp, float NewHealth, float Delta)
 {
-	if (NewHealth <= 0.0f && Delat < 0.0f)
+	if (NewHealth <= 0.0f && Delta < 0.0f)
 	{
 		APlayerController* PC=Cast<APlayerController>(GetController());
 		DisableInput(PC);
 	}
 }
+
+FVector AVSK_Character::GetPawnViewLocation()const
+{
+	return CameraComp->GetComponentLocation();
+}
+
+void AVSK_Character::SprintStart()
+{
+	ActionComp->StartActionByName(this, "Sprint");
+}
+void AVSK_Character::SprintStop()
+{
+	ActionComp->StopActionByName(this, "Sprint");
+}
+
 
 
 

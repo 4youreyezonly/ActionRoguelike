@@ -6,11 +6,14 @@
 #include "GameFramework/Character.h"
 #include "VSK_Character.generated.h"
 
+#define ECC_AIPawn ECC_GameTraceChannel1
+
 class UVSK_InteractionComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UAnimMontage;
 class UVSK_AttributeComponent;
+class UVSK_ActionComponent;
 
 UCLASS()
 class ACTIONROGUELIKE_API AVSK_Character : public ACharacter
@@ -60,6 +63,9 @@ protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Components")
 		UVSK_AttributeComponent* AttributeComp;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+		UVSK_ActionComponent* ActionComp;
+
 
 
 	// Called when the game starts or when spawned
@@ -73,6 +79,8 @@ protected:
 	void UltimateAttack_TimeElapsed();
 	void TransAttack();
 	void TransAttack_TimeElapsed();
+	void SprintStart();
+	void SprintStop();
 
 	//ÌøÔ¾¿ªÊ¼
 	void JumpStart();
@@ -82,9 +90,12 @@ protected:
 	void PrimaryInteract();
 	
 	UFUNCTION()
-		void OnHealthChanged(AActor* InstigatorActor, UVSK_AttributeComponent* OwningComp, float NewHealth, float Delat);
+		void OnHealthChanged(AActor* InstigatorActor, UVSK_AttributeComponent* OwningComp, float NewHealth, float Delta);
 
 	virtual void PostInitializeComponents() override;
+
+public:
+	virtual FVector GetPawnViewLocation() const override;
 
 
 public:
@@ -93,5 +104,8 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UFUNCTION(Exec)
+		void HealSelf(float Amount = 100);
 
 };
