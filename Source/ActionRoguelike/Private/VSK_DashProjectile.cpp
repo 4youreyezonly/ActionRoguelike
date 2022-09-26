@@ -9,7 +9,6 @@ AVSK_DashProjectile::AVSK_DashProjectile()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	MovementComp->InitialSpeed = 2000.0f;
-
 }
 
 // Called when the game starts or when spawned

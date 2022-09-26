@@ -19,13 +19,14 @@ AVSK_MagicProjectile::AVSK_MagicProjectile()
 	MovementComp->InitialSpeed = 2000.0f;
 	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &AVSK_MagicProjectile::OnActorOverlap);
 	SphereComp->IgnoreActorWhenMoving(GetInstigator(),true);
-
 }
 
 void AVSK_MagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor&&OtherActor != GetInstigator())
 	{
+		UE_LOG(LogTemp, Log, TEXT("Overlap_Instigator: %s."), GetInstigator());
+		UE_LOG(LogTemp, Log, TEXT("Overlap_OtherActor: %s."), OtherActor);
 		UVSK_AttributeComponent* AttributeComp = Cast<UVSK_AttributeComponent>(OtherActor->GetComponentByClass(UVSK_AttributeComponent::StaticClass()));
 		if (UVSK_GameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
 		{

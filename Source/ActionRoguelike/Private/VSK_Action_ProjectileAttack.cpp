@@ -23,7 +23,7 @@ void UVSK_Action_ProjectileAttack::StartAction_Implementation(AActor* Instigator
 
 		FTimerHandle TimerHandle_AttackDelay;
 		FTimerDelegate Delegate;
-		Delegate.BindUFunction(this, "AttackDelay_ELapsed", Character);
+		Delegate.BindUFunction(this,"AttackDelay_ELapsed",Character);
 
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, AttackAnimDelay, false);
 
@@ -58,14 +58,12 @@ void UVSK_Action_ProjectileAttack::AttackDelay_Elapsed(AVSK_Character* Instigato
 		if (GetWorld()->SweepSingleByObjectType(Hit, TraceStart, TraceEnd, FQuat::Identity, ObjParams, Shape, Params))
 		{
 			TraceEnd = Hit.ImpactPoint;
-			UE_LOG(LogTemp, Log, TEXT("TRACED"));
 		}
 
 		FRotator ProjRotation = FRotationMatrix::MakeFromX(TraceEnd - HandLocation).Rotator();
 
 		FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
 		GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
-		UE_LOG(LogTemp, Log, TEXT("SPAWNED"));
 
 	}
 	StopAction(InstigatorCharacter);
