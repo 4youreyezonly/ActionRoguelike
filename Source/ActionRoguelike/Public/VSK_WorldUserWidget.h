@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "VSK_WorldUserWidget.generated.h"
 
+
+
 class USizeBox;
 
 /**
@@ -26,7 +28,7 @@ public:
 	UPROPERTY(EditAnywhere,Category = "UI")
 		FVector WorldOffset;
 
-	UPROPERTY(BlueprintReadOnly,Category="UI")
+	UPROPERTY(BlueprintReadWrite,Category="UI",meta = (ExposeOnSpawn =true))
 		AActor* AttachedActor;
 	
 };

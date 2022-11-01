@@ -3,6 +3,7 @@
 
 #include "VSK_ItemChest.h"
 #include "Components/StaticMeshComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AVSK_ItemChest::AVSK_ItemChest()
@@ -15,13 +16,36 @@ AVSK_ItemChest::AVSK_ItemChest()
 	LidMesh = CreateDefaultSubobject<UStaticMeshComponent>("LidMesh");
 	LidMesh->SetupAttachment(BaseMesh);
 
-	TargetPitch = 110;																																			 
+	TargetPitch = 110;	
+	bReplicates = true;
 }
 
 
 void AVSK_ItemChest::Interact_Implementation(APawn* InstigatorPawn)
 {
-	LidMesh->SetRelativeRotation(FRotator(TargetPitch, 0, 0));
+	bLidOpened = !bLidOpened;
+	OnRep_LidOpened();
 }
+
+void AVSK_ItemChest::OnRep_LidOpened()
+{
+	float CurrPitch = bLidOpened ? TargetPitch : 0.0f;
+	LidMesh->SetRelativeRotation(FRotator(CurrPitch, 0, 0));
+}
+
+void AVSK_ItemChest::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AVSK_ItemChest, bLidOpened);
+}
+
+
+void AVSK_ItemChest::OnActorLoaded_Implementation()
+{
+	OnRep_LidOpened();
+}
+
+
 
 

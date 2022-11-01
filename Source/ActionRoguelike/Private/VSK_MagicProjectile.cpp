@@ -10,6 +10,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "AI/VSK_AICharacter.h"
 #include "VSK_GameplayFunctionLibrary.h"
+#include "VSK_ActionComponent.h"
+#include "VSK_ActionEffect.h"
 
 
 // Sets default values
@@ -19,16 +21,28 @@ AVSK_MagicProjectile::AVSK_MagicProjectile()
 	MovementComp->InitialSpeed = 2000.0f;
 	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &AVSK_MagicProjectile::OnActorOverlap);
 	SphereComp->IgnoreActorWhenMoving(GetInstigator(),true);
+
+	InitialLifeSpan = 10.0f;
+	MovementComp->bRotationFollowsVelocity = true;
 }
 
 void AVSK_MagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor&&OtherActor != GetInstigator())
 	{
+		UVSK_ActionComponent* ActionComp = Cast<UVSK_ActionComponent>(OtherActor->GetComponentByClass(UVSK_ActionComponent::StaticClass()));
+		if (ActionComp && ActionComp->ActiveGameplayTags.HasTag(ParryTag))
+		{
+			MovementComp->Velocity = -MovementComp->Velocity;
+
+			SetInstigator(Cast<APawn>(OtherActor));
+			return;
+		}
+
 		UE_LOG(LogTemp, Log, TEXT("Overlap_Instigator: %s."), GetInstigator());
 		UE_LOG(LogTemp, Log, TEXT("Overlap_OtherActor: %s."), OtherActor);
 		UVSK_AttributeComponent* AttributeComp = Cast<UVSK_AttributeComponent>(OtherActor->GetComponentByClass(UVSK_AttributeComponent::StaticClass()));
-		if (UVSK_GameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
+		if (UVSK_GameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult)&& UVSK_GameplayFunctionLibrary::AddRage(GetInstigator(), OtherActor, RageAmount))
 		{
 			/*AttributeComp->ApplyHealthChange(GetInstigator(),-DamageAmount);*/
 
@@ -37,13 +51,18 @@ void AVSK_MagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedCompone
 			if (HitedCharacter)
 			{
 				HitedCharacter->GetMesh()->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds);
+				if (ActionComp)
+				{
+					ActionComp->AddAction(GetInstigator(),BurningActionClass);
+				}
 				UGameplayStatics::SpawnEmitterAtLocation(this, ExplodeFX,GetActorLocation(),GetActorRotation());
 
 			}
-			if (HitedAICharacter)
+			if (HitedAICharacter && HasAuthority())
 			{
 				HitedAICharacter->GetMesh()->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds);
 				UGameplayStatics::SpawnEmitterAtLocation(this, ExplodeFX, GetActorLocation(), GetActorRotation());
+				ActionComp->AddAction(GetInstigator(), BurningActionClass);
 
 			}
 			UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());

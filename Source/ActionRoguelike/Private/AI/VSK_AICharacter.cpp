@@ -14,6 +14,7 @@
 #include "VSK_WorldUserWidget.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "VSK_ActionComponent.h"
 
 
 AVSK_AICharacter::AVSK_AICharacter()
@@ -21,9 +22,11 @@ AVSK_AICharacter::AVSK_AICharacter()
 
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>("PawnSensingComp");
 	AttributeComp = CreateDefaultSubobject<UVSK_AttributeComponent>("AttributeComp");
+	ActionComp = CreateDefaultSubobject<UVSK_ActionComponent>("ActionComp");
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	//WidgetComponent = CreateDefaultSubobject<UWidgetComponent>("WidgetComponent");
 	//WidgetComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	GetMesh()->SetGenerateOverlapEvents(true);
 
 }
 void AVSK_AICharacter::PostInitializeComponents()
@@ -31,6 +34,7 @@ void AVSK_AICharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AVSK_AICharacter::OnPawnSeen);
 	AttributeComp->OnHealthChanged.AddDynamic(this, &AVSK_AICharacter::OnHealthChanged);
+	AttributeComp->OnRageChanged.AddDynamic(this, &AVSK_AICharacter::OnRageChanged);
 }
 
 void AVSK_AICharacter::OnHealthChanged(AActor* InstigatorActor, UVSK_AttributeComponent* OwningComp, float NewHealth, float Delta)
@@ -47,27 +51,19 @@ void AVSK_AICharacter::OnHealthChanged(AActor* InstigatorActor, UVSK_AttributeCo
 			if (ActiveHealthBar)
 			{
 				ActiveHealthBar->AttachedActor = this;
-				ActiveHealthBar->AddToViewport();
+				ActiveHealthBar->AddToViewport(10);
 			}
 		}
-		
+		if (ActiveSpottedWidget == nullptr)
+		{
+			ActiveSpottedWidget = CreateWidget<UVSK_WorldUserWidget>(GetWorld(), SpottedWidgetClass);
+			if (ActiveSpottedWidget)
+			{
+				ActiveSpottedWidget->AttachedActor = this;
+				ActiveSpottedWidget->AddToViewport(10);
+			}
+		}
 
-
-		//UUserWidget* InfoWidget = WidgetComponent->GetUserWidgetObject();
-		//if (InfoWidget)
-		//{
-		//	auto ProgressBar = Cast<UProgressBar>(InfoWidget->GetWidgetFromName(TEXT("Minion_Life")));
-		//	if (ProgressBar)
-		//	{
-		//		ProgressBar->SetPercent((AttributeComp->GetHealth()) / (AttributeComp->GetHealthMax()));
-		//	}
-		//	auto HealthText = Cast<UTextBlock>(InfoWidget->GetWidgetFromName(TEXT("HealthText")));
-		//	if (HealthText)
-		//	{
-		//		FString Health = FString::SanitizeFloat(AttributeComp->GetHealth());
-		//		HealthText->SetText(FText::FromString(Health));
-		//	}
-		//}
 
 		if (NewHealth <= 0.0f)
 		{
@@ -85,6 +81,18 @@ void AVSK_AICharacter::OnHealthChanged(AActor* InstigatorActor, UVSK_AttributeCo
 		}
 	}
 }
+void AVSK_AICharacter::OnRageChanged(AActor* InstigatorActor, UVSK_AttributeComponent* OwningComp, float NewRage, float Delta)
+{
+	if (ActiveRageBar == nullptr)
+	{
+		ActiveRageBar = CreateWidget<UVSK_WorldUserWidget>(GetWorld(), RageBarWidgetClass);
+		if (ActiveRageBar)
+		{
+			ActiveRageBar->AttachedActor = this;
+			ActiveRageBar->AddToViewport();
+		}
+	}
+}
 
 void AVSK_AICharacter::SetTargetActor(AActor* NewTarget)
 {
@@ -95,14 +103,43 @@ void AVSK_AICharacter::SetTargetActor(AActor* NewTarget)
 	}
 }
 
+AActor* AVSK_AICharacter::GetTargetActor()const
+{
+	AAIController* AIC = Cast<AAIController>(GetController());
+	if (AIC)
+	{
+		return Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject("TargetActor"));
+	}
+	return nullptr;
+}
+
 void AVSK_AICharacter::OnPawnSeen(APawn* Pawn)
 {
-	SetTargetActor(Pawn);
-  	DrawDebugString(GetWorld(), GetActorLocation(), "PLAYER SPOTTED", nullptr, FColor::White, 4.0f, true);
+	if (GetTargetActor() != Pawn)
+	{
+		SetTargetActor(Pawn);
+		DrawDebugString(GetWorld(), GetActorLocation(), "PLAYER SPOTTED", nullptr, FColor::White, 4.0f, true);
+	
+		MulticastPawnSeen();
+	
+	}
 }
 
 void  AVSK_AICharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 		
+}
+
+void AVSK_AICharacter::MulticastPawnSeen_Implementation()
+{
+	if (ActiveSpottedWidget == nullptr)
+	{
+		ActiveSpottedWidget = CreateWidget<UVSK_WorldUserWidget>(GetWorld(), SpottedWidgetClass);
+		if (ActiveSpottedWidget)
+		{
+			ActiveSpottedWidget->AttachedActor = this;
+			ActiveSpottedWidget->AddToViewport(10);
+		}
+	}
 }

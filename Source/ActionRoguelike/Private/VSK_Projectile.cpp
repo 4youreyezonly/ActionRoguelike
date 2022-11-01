@@ -26,6 +26,7 @@ AVSK_Projectile::AVSK_Projectile()
 	MovementComp->bRotationFollowsVelocity = true;
 	MovementComp->bInitialVelocityInLocalSpace = true;
 
+	bReplicates = true;
 }
 
 // Called when the game starts or when spawned

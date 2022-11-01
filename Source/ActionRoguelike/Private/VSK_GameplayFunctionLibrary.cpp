@@ -14,6 +14,15 @@ bool UVSK_GameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* Tar
 	}
 	return false;
 }
+bool UVSK_GameplayFunctionLibrary::AddRage(AActor* DamageCauser, AActor* TargetActor, float RageAmount)
+{
+	UVSK_AttributeComponent* AttributeComp = UVSK_AttributeComponent::GetAttributeComponent(TargetActor);
+	if (AttributeComp)
+	{
+		return AttributeComp->ApplyRageChange(DamageCauser, RageAmount);
+	}
+	return false;
+}
 
 bool UVSK_GameplayFunctionLibrary::ApplyDirectionalDamage(AActor* DamageCauser, AActor* TargetActor, float DamageAmount, const FHitResult& HitResult)
 {

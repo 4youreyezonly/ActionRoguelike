@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "VSK_AttributeComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged,AActor*,InstigatorActor,UVSK_AttributeComponent*,OwningComp, float, NewHealth, float, ActualDelta);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnAttributeChanged,AActor*,InstigatorActor,UVSK_AttributeComponent*,OwningComp, float, NewValue, float, ActualDelta);
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -28,25 +28,40 @@ public:
 		static bool isActorAlive(AActor* Actor);
 
 protected:
-	
-	UPROPERTY(BlueprintReadOnly)
+ 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Replicated, Category = "Attributes")
 		float Health;
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Attributes")
+	UPROPERTY(BlueprintReadOnly,EditDefaultsOnly,Replicated, Category = "Attributes")
 		float HealthMax;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Replicated, Category = "Attributes")
+		float Rage;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Replicated, Category = "Attributes")
+		float RageMax;
+
+	UFUNCTION(NetMulticast,Reliable)
+		void MulticastHealthChanged(AActor* InstigatorActor, float NewHealth,float Delta);
+
+	UFUNCTION(NetMulticast, Reliable)
+		void MulticastRageChanged(AActor* InstigatorActor, float NewHealth, float Delta);
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
-public:
+public:												
+	UPROPERTY(BlueprintAssignable,Category = "Attributes")
+		FOnAttributeChanged OnHealthChanged;
 
-
-	UPROPERTY(BlueprintAssignable)
-		FOnHealthChanged OnHealthChanged;
+	UPROPERTY(BlueprintAssignable,Category = "Attributes")
+		FOnAttributeChanged OnRageChanged;
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
-		bool ApplyHealthChange(AActor* instigatorActor,float Delta);
+		bool ApplyHealthChange(AActor* InstigatorActor,float Delta);
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+		bool ApplyRageChange(AActor* InstigatorActor, float Delta);
 
 	UFUNCTION(BlueprintCallable,Category = "Attributes")
 		bool IsAlive()const;

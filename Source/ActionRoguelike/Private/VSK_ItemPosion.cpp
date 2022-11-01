@@ -3,6 +3,9 @@
 
 #include "VSK_ItemPosion.h"
 #include "VSK_AttributeComponent.h"
+#include "VSK_PlayerState.h"
+
+#define LOCTEXT_NAMESPACE "InteractableActors"
 
 // Sets default values
 AVSK_ItemPosion::AVSK_ItemPosion()
@@ -14,6 +17,16 @@ AVSK_ItemPosion::AVSK_ItemPosion()
 
 }
 
+FText AVSK_ItemPosion::GetInteractText_Implementation(APawn* InstigatorPawn)
+{
+	UVSK_AttributeComponent* AttributeComp = UVSK_AttributeComponent::GetAttributeComponent(InstigatorPawn);
+	if (AttributeComp && AttributeComp->IsFullHealthAlive())
+	{
+		return LOCTEXT("HealthPotion_FullHealthWarning","Already at full health.");
+	}
+	return FText::Format(LOCTEXT( "HealthPotion_InteractMessage", "Cost {0} Credits. Restores health to maximum."), CreditCost);
+}
+
 void AVSK_ItemPosion::Interact_Implementation(APawn* InstigatorPawn)
 {
 		UVSK_AttributeComponent* AttributeComp = Cast<UVSK_AttributeComponent>(InstigatorPawn->GetComponentByClass(UVSK_AttributeComponent::StaticClass()));
@@ -21,9 +34,16 @@ void AVSK_ItemPosion::Interact_Implementation(APawn* InstigatorPawn)
 		{
 			return;
 		}
-		AttributeComp->ApplyHealthChange(this,HealAmount);
-		AddActorLocalOffset(-GetActorUpVector() * 500);
-		GetWorldTimerManager().SetTimer(TimerHandle_Heal, this, &AVSK_ItemPosion::Heal_TimeElapsed, Cd);
+		if (AVSK_PlayerState* PS = InstigatorPawn->GetPlayerState<AVSK_PlayerState>())
+		{
+			if (PS->RemoveCredits(CreditCost))
+			{
+				AttributeComp->ApplyHealthChange(this, HealAmount);
+				AddActorLocalOffset(-GetActorUpVector() * 500);
+				GetWorldTimerManager().SetTimer(TimerHandle_Heal, this, &AVSK_ItemPosion::Heal_TimeElapsed, Cd);
+			}
+		}
+
 }
 
 void AVSK_ItemPosion::Heal_TimeElapsed()
@@ -32,3 +52,4 @@ void AVSK_ItemPosion::Heal_TimeElapsed()
 	AddActorLocalOffset(GetActorUpVector() * 500);
 }
 
+#undef LOCTEXT_NAMESPACE

@@ -3,13 +3,16 @@
 
 #include "VSK_AttributeComponent.h"
 #include "VSK_GameModeBase.h"
+#include "Net/UnrealNetwork.h"
 
 static TAutoConsoleVariable<float> CVarDamageMultiplier(TEXT("VSK.DamageMultplier"), 1.0f, TEXT("Global Damage Modifier for Attribute Component."), ECVF_Cheat);
 
 // Sets default values for this component's properties
 UVSK_AttributeComponent::UVSK_AttributeComponent()
 {
- 
+	SetIsReplicatedByDefault(true);
+
+
 }
 #if WITH_EDITOR
 void UVSK_AttributeComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -38,9 +41,7 @@ bool UVSK_AttributeComponent::isActorAlive(AActor* Actor)
 	return false;
 }
 
-
-
-bool UVSK_AttributeComponent::ApplyHealthChange(AActor* instigatorActor,float Delta)
+bool UVSK_AttributeComponent::ApplyHealthChange(AActor* InstigatorActor,float Delta)
 {
 	if (!GetOwner()->CanBeDamaged()&&Delta<0.0f)
 	{
@@ -52,23 +53,72 @@ bool UVSK_AttributeComponent::ApplyHealthChange(AActor* instigatorActor,float De
 		float DamageMultiplier = CVarDamageMultiplier.GetValueOnGameThread();
 		Delta *= DamageMultiplier;
 	}
+
 	float OldHealth = Health;
-	Health = FMath::Clamp(Health + Delta, 0.0f, HealthMax);
-
-	float ActualDelta = Health - OldHealth;
-
-	OnHealthChanged.Broadcast(instigatorActor,this,Health,ActualDelta);
-
-	if (ActualDelta < 0.0F && Health == 0.0f)
+	float NewHealth = FMath::Clamp(Health + Delta, 0.0f, HealthMax);
+	float ActualDelta = NewHealth - OldHealth;
+	if (GetOwner()->HasAuthority())
 	{
-		AVSK_GameModeBase* GM = GetWorld()->GetAuthGameMode<AVSK_GameModeBase>();
-		if (GM)
+		Health = NewHealth;
+
+		if (ActualDelta != 0.0f)
 		{
-			GM->OnActorKilled(GetOwner(), instigatorActor);			
+			MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
+		}
+
+		if (ActualDelta < 0.0F && Health == 0.0f)
+		{
+			AVSK_GameModeBase* GM = GetWorld()->GetAuthGameMode<AVSK_GameModeBase>();
+			if (GM)
+			{
+				GM->OnActorKilled(GetOwner(), InstigatorActor);
+			}
 		}
 	}
 
-	return true;
+	//OnHealthChanged.Broadcast(instigatorActor,this,Health,ActualDelta);
+
+	return ActualDelta != 0;
+}
+
+bool UVSK_AttributeComponent::ApplyRageChange(AActor* InstigatorActor, float Delta)
+{
+	if (!GetOwner()->CanBeDamaged() && Delta < 0.0f)
+	{
+		return false;
+	}
+
+	if (Delta < 0.0f)
+	{
+		float DamageMultiplier = CVarDamageMultiplier.GetValueOnGameThread();
+		Delta *= DamageMultiplier;
+	}																						                                             
+
+	float OldRage = Rage;
+	float NewRage = FMath::Clamp(Rage + Delta, 0.0f, RageMax);
+	float ActualDelta = NewRage - OldRage;
+	if (GetOwner()->HasAuthority())
+	{
+		Rage = NewRage;
+
+		if (ActualDelta != 0.0f)
+		{
+			MulticastRageChanged(InstigatorActor, Rage, ActualDelta);
+		}
+
+		if (ActualDelta < 0.0F && Rage== 0.0f)
+		{
+			AVSK_GameModeBase* GM = GetWorld()->GetAuthGameMode<AVSK_GameModeBase>();
+			if (GM)
+			{
+				GM->OnActorKilled(GetOwner(), InstigatorActor);
+			}
+		}
+	}
+
+	//OnRageChanged.Broadcast(instigatorActor,this,Rage,ActualDelta);
+
+	return ActualDelta != 0;
 }
 
 bool UVSK_AttributeComponent::IsAlive() const
@@ -99,5 +149,21 @@ bool UVSK_AttributeComponent::Kill(AActor* InstigatorActor)
 	return ApplyHealthChange(InstigatorActor, -GetHealthMax());
 }
 
+void UVSK_AttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(UVSK_AttributeComponent, Health);
+	DOREPLIFETIME(UVSK_AttributeComponent, HealthMax);
 
+	//DOREPLIFETIME_CONDITION(UVSK_AttributeComponent, HealthMax,COND_OwnerOnly);
+}
+
+void UVSK_AttributeComponent::MulticastHealthChanged_Implementation(AActor* InstigatorActor, float NewHealth, float Delta)
+{
+	OnHealthChanged.Broadcast(InstigatorActor,this, NewHealth, Delta);
+}
+void UVSK_AttributeComponent::MulticastRageChanged_Implementation(AActor* InstigatorActor, float NewHealth, float Delta)
+{
+	OnRageChanged.Broadcast(InstigatorActor, this, NewHealth, Delta);
+}

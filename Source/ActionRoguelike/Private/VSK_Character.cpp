@@ -67,8 +67,8 @@ void AVSK_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed,this, &AVSK_Character::PrimaryAttack);
-	PlayerInputComponent->BindAction("UltimateAttack", IE_Pressed, this, &AVSK_Character::UltimateAttack);
-	PlayerInputComponent->BindAction("TransAttack", IE_Pressed, this, &AVSK_Character::TransAttack);
+	PlayerInputComponent->BindAction("Blackhole", IE_Pressed, this, &AVSK_Character::UltimateAttack);
+	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AVSK_Character::TransAttack);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AVSK_Character::JumpStart);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AVSK_Character::JumpEnd);
@@ -110,20 +110,13 @@ void AVSK_Character::PrimaryAttack()
 }
 void AVSK_Character::UltimateAttack()
 {
-	PlayAnimMontage(UltimateAttackAnim);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_UltimateAttack, this, &AVSK_Character::UltimateAttack_TimeElapsed, 0.25f);
+	ActionComp->StartActionByName(this, "Blackhole");
 
 } 
 void AVSK_Character::TransAttack()
 {
-	PlayAnimMontage(CommonAttackAnim);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_TransAttack, this, &AVSK_Character::TransAttack_TimeElapsed, 0.2f);
-
+	ActionComp->StartActionByName(this, "Dash");
 }
-void AVSK_Character::PrimaryAttack_TimeElapsed()
-{
 	//FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
 
 	//FVector Start =GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
@@ -197,167 +190,6 @@ void AVSK_Character::PrimaryAttack_TimeElapsed()
 	//	UE_LOG(LogTemp, Warning, TEXT("Hits Nothing"));
 	//}
 
-
-
-}
-void AVSK_Character::UltimateAttack_TimeElapsed()
-{
-	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_02");
-
-	FVector Start = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
-	FVector End = Start + GetControlRotation().Vector() * 10000;
-
-	FVector Look = End - Start;
-	FRotator FLook = Look.ToOrientationRotator();
-
-
-	//RayCheckSet
-
-	FCollisionObjectQueryParams ObjectQueryParams;
-	ObjectQueryParams.AddObjectTypesToQuery(ECC_AIPawn);
-	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-
-	/*FHitResult Hit;
-	bool bBlockingHit=GetWorld()->LineTraceSingleByObjectType(Hit, EyeLocation, End, ObjectQueryParams);*/
-
-	TArray<FHitResult> Hits;
-
-	float Radius = 30.0f;
-
-	FCollisionShape Shape;
-	Shape.SetSphere(Radius);
-
-	bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, Start, End, FQuat::Identity, ObjectQueryParams, Shape);
-
-	FColor LineColor = bBlockingHit ? FColor::Green : FColor::Red;
-
-	for (FHitResult Hit : Hits)
-	{
-		AActor* HitActor = Hit.GetActor();
-		if (bBlockingHit)
-		{
-			FVector HStart = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
-			FVector HEnd = /*HitActor->GetActorLocation()*/Hit.Location;
-
-			FVector HLook = HEnd - HandLocation;
-			FRotator RHLook = HLook.ToOrientationRotator();
-
-			FVector	Adjusted_HandLocation = HandLocation + GetActorUpVector().Normalize() * 70;
-
-			FTransform SpawnTM = FTransform(RHLook, Adjusted_HandLocation);
-
-			FActorSpawnParameters SpwanParams;
-
-			SpwanParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			SpwanParams.Instigator = this;
-
-			GetWorld()->SpawnActor<AActor>(UltimateProjectileClass, SpawnTM, SpwanParams);
-			UE_LOG(LogTemp, Warning, TEXT("Hited"));
-			break;
-		}
-
-	}
-	if (!bBlockingHit)
-	{
-		FVector HStart = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
-		FVector HEnd = Start + GetControlRotation().Vector() * 3000;
-
-		FVector HLook = HEnd - HandLocation;
-		FRotator RHLook = HLook.ToOrientationRotator();
-
-		FVector	Adjusted_HandLocation = HandLocation + GetActorUpVector().Normalize()*70;
-
-		FTransform SpawnTM = FTransform(RHLook, Adjusted_HandLocation);
-
-		FActorSpawnParameters SpwanParams;
-
-		SpwanParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpwanParams.Instigator = this;
-
-		GetWorld()->SpawnActor<AActor>(UltimateProjectileClass, SpawnTM, SpwanParams);
-		UE_LOG(LogTemp, Warning, TEXT("Hits Nothing"));
-	}
-
-
-
-}
-void AVSK_Character::TransAttack_TimeElapsed()
-{
-	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
-
-	FVector Start = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
-	FVector End = Start + GetControlRotation().Vector() * 10000;
-
-	FVector Look = End - Start;
-	FRotator FLook = Look.ToOrientationRotator();
-
-
-	//RayCheckSet
-
-	FCollisionObjectQueryParams ObjectQueryParams;
-	ObjectQueryParams.AddObjectTypesToQuery(ECC_AIPawn);
-	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-
-	/*FHitResult Hit;
-	bool bBlockingHit=GetWorld()->LineTraceSingleByObjectType(Hit, EyeLocation, End, ObjectQueryParams);*/
-
-	TArray<FHitResult> Hits;
-
-	float Radius = 30.0f;
-
-	FCollisionShape Shape;
-	Shape.SetSphere(Radius);
-
-	bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, Start, End, FQuat::Identity, ObjectQueryParams, Shape);
-
-	FColor LineColor = bBlockingHit ? FColor::Green : FColor::Red;
-
-	for (FHitResult Hit : Hits)
-	{
-		AActor* HitActor = Hit.GetActor();
-		if (bBlockingHit)
-		{
-			FVector HStart = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
-			FVector HEnd = /*HitActor->GetActorLocation()*/Hit.Location;
-
-			FVector HLook = HEnd - HandLocation;
-			FRotator RHLook = HLook.ToOrientationRotator();
-
-			FTransform SpawnTM = FTransform(RHLook, HandLocation);
-
-			FActorSpawnParameters SpwanParams;
-
-			SpwanParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			SpwanParams.Instigator = this;
-
-			GetWorld()->SpawnActor<AActor>(TransProjectileClass, SpawnTM, SpwanParams);
-			UE_LOG(LogTemp, Warning, TEXT("Hited"));
-			break;
-		}
-
-	}
-	if (!bBlockingHit)
-	{
-		FVector HStart = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
-		FVector HEnd = Start + GetControlRotation().Vector() * 3000;
-
-		FVector HLook = HEnd - HandLocation;
-		FRotator RHLook = HLook.ToOrientationRotator();
-
-		FTransform SpawnTM = FTransform(RHLook, HandLocation);
-
-		FActorSpawnParameters SpwanParams;
-
-		SpwanParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpwanParams.Instigator = this;
-
-		GetWorld()->SpawnActor<AActor>(TransProjectileClass, SpawnTM, SpwanParams);
-		UE_LOG(LogTemp, Warning, TEXT("Hits Nothing"));
-	}
-
-
-
-}
 void AVSK_Character::JumpStart()
 {
 	//如果是真的话，角色跳跃
@@ -382,6 +214,8 @@ void AVSK_Character::OnHealthChanged(AActor* InstigatorActor, UVSK_AttributeComp
 	{
 		APlayerController* PC=Cast<APlayerController>(GetController());
 		DisableInput(PC);
+
+		SetLifeSpan(5.0f);
 	}
 }
 

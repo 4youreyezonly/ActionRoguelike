@@ -19,12 +19,7 @@ public:
 	// Sets default values for this actor's properties
 	AVSK_ItemPosion();
 
-	UPROPERTY(EditAnywhere)
-	float HealAmount;
-
-	UPROPERTY(EditAnywhere)
-	float Cd;
-
+	FText GetInteractText_Implementation(APawn* InstigatorPawn);
 
 
 protected:
@@ -34,5 +29,14 @@ protected:
 	FTimerHandle TimerHandle_Heal;
 
 	void Heal_TimeElapsed();
+
+	UPROPERTY(EditAnywhere)
+		float HealAmount;
+
+	UPROPERTY(EditAnywhere)
+		float Cd;
+
+	UPROPERTY(EditAnywhere)
+		float CreditCost;
 
 };
