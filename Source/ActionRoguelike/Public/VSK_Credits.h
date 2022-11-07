@@ -3,38 +3,25 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "VSK_GameplayInterface.h"
+#include "VSK_PowerupActor.h"
 #include "VSK_Credits.generated.h"
 
 UCLASS()
-class ACTIONROGUELIKE_API AVSK_Credits : public AActor, public IVSK_GameplayInterface
+class ACTIONROGUELIKE_API AVSK_Credits : public AVSK_PowerupActor
 {
 	GENERATED_BODY()
 
-public:
-	// Sets default values for this actor's properties
-	AVSK_Credits();
+
 
 protected:
 
-	void Interact_Implementation(APawn* InstigatorPawn);
 
- 	UPROPERTY(EditAnywhere)
-		UStaticMeshComponent* Mesh;
-
-	UPROPERTY(EditAnywhere, Category ="Credits")
-		float CreditsAmount;
-
-	void Credits_TimeElapsed();
-
-	FTimerHandle TimerHandle_Heal;
-
-	UPROPERTY(EditAnywhere ,Category = "Credits")
-		float Cd;
-
-public:	
+	UPROPERTY(EditAnywhere, Category = "Credits")
+		int32 CreditsAmount;
 
 
+public:
+	AVSK_Credits();
 
+	void Interact_Implementation(APawn* InstigatorPawn) override;
 };

@@ -13,20 +13,13 @@ class ACTIONROGUELIKE_API UVSK_InteractionComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:
-	void PrimaryInteract();
-
-public:	
-	// Sets default values for this component's properties
-	UVSK_InteractionComponent();
-
 protected:
 
 	UFUNCTION(Server,Reliable)
 	void ServerInteract(AActor* InFocus);
 
 	void FindBestInteractable();
-	// Called when the game starts
+
 	virtual void BeginPlay() override;
 
 	UPROPERTY()
@@ -51,5 +44,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void PrimaryInteract();
+
+	UVSK_InteractionComponent();
 		
 };

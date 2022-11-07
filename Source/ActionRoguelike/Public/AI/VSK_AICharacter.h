@@ -28,10 +28,10 @@ protected:
 	UVSK_WorldUserWidget* ActiveSpottedWidget;
 
 	UPROPERTY(EditDefaultsOnly,Category="UI")
-		TSubclassOf<UUserWidget> HealthBarWidgetClass;
+		TSubclassOf<UVSK_WorldUserWidget> HealthBarWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
-		TSubclassOf<UUserWidget> RageBarWidgetClass;
+		TSubclassOf<UVSK_WorldUserWidget> RageBarWidgetClass;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 		TSubclassOf<UVSK_WorldUserWidget> SpottedWidgetClass;

@@ -33,6 +33,8 @@ AVSK_Character::AVSK_Character()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
 
+	TimeToHitParamName = "TimeToHit";
+
 }
 
 void AVSK_Character::PostInitializeComponents()
@@ -40,20 +42,8 @@ void AVSK_Character::PostInitializeComponents()
 	Super::PostInitializeComponents();
 	AttributeComp->OnHealthChanged.AddDynamic(this, &AVSK_Character::OnHealthChanged);
 }
-// Called when the game starts or when spawned
-void AVSK_Character::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
 
 
-// Called every frame
-void AVSK_Character::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 
 // Called to bind functionality to input
 void AVSK_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -210,6 +200,13 @@ void AVSK_Character::PrimaryInteract()
 
 void AVSK_Character::OnHealthChanged(AActor* InstigatorActor, UVSK_AttributeComponent* OwningComp, float NewHealth, float Delta)
 {
+	if (Delta < 0.0f)
+	{
+		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
+
+		float RageDelta = FMath::Abs(Delta);
+		AttributeComp->ApplyRageChange(InstigatorActor, RageDelta);
+	}
 	if (NewHealth <= 0.0f && Delta < 0.0f)
 	{
 		APlayerController* PC=Cast<APlayerController>(GetController());

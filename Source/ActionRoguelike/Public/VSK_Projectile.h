@@ -9,19 +9,31 @@
 class USphereComponent;
 class UProjectileMovementComponent;
 class UParticleSystemComponent;
+class UAudioComponent;
+class USoundCue;
+class UCameraShakeBase;
 
 UCLASS()
 class ACTIONROGUELIKE_API AVSK_Projectile : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	AVSK_Projectile();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects|Shake")
+		TSubclassOf<UCameraShakeBase> ImpactShake;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects|Shake")
+		float ImpactShakeInnerRadius;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects|Shake")
+		float ImpactShakeOuterRadius;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+		UParticleSystem* ImpactVFX;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+		USoundCue* ImpactSound;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		USphereComponent* SphereComp;
@@ -32,8 +44,20 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		UParticleSystemComponent* EffectComp;
 
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+		UAudioComponent* AudioComp;
+
+	UFUNCTION()
+		virtual void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+		void Explode();
+
+	virtual void PostInitializeComponents() override;
+
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+
+	AVSK_Projectile();
+
 
 };

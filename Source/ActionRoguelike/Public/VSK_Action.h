@@ -44,6 +44,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Tags")
 		FGameplayTagContainer GrantsTags;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Tags")
 		FGameplayTagContainer BlockedTags;
 
@@ -67,8 +68,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 		bool IsRunning()const;
-
-	void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Action")
 		bool CanStart(AActor* Instigator);

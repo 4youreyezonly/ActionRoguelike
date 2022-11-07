@@ -8,10 +8,6 @@
 AVSK_Credits::AVSK_Credits()
 {
 	CreditsAmount = 80;
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
-	SetRootComponent(Mesh);
-	
-	bReplicates = true;
 }
 
 void AVSK_Credits::Interact_Implementation(APawn* InstigatorPawn)
@@ -20,18 +16,12 @@ void AVSK_Credits::Interact_Implementation(APawn* InstigatorPawn)
 	{
 		return;
 	}
+
 	if (AVSK_PlayerState* PS = InstigatorPawn->GetPlayerState<AVSK_PlayerState>())
 	{
 		PS->AddCredits(CreditsAmount);
-		AddActorLocalOffset(-GetActorUpVector() * 500);
-		GetWorldTimerManager().SetTimer(TimerHandle_Heal, this, &AVSK_Credits::Credits_TimeElapsed, Cd);
-
+		HideAndCooldownPowerup();
 	}
-}
-
-void AVSK_Credits::Credits_TimeElapsed()
-{
-	AddActorLocalOffset(GetActorUpVector() * 500);
 }
 
 

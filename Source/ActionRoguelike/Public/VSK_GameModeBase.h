@@ -83,11 +83,10 @@ protected:
 	UFUNCTION()
 		void OnSpawnBotQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
 
-	void OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLocation);
-
 	UFUNCTION()
 		void OnPowerupSpawnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
 
+	void OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLocation);
 
 	UPROPERTY(EditAnywhere, Category = "Powerups")
 		float CreditsPerKill;
@@ -103,9 +102,9 @@ protected:
 
 public:
 
-	virtual void OnActorKilled(AActor* VictimActor, AActor* Killer);
-
 	AVSK_GameModeBase();
+
+	virtual void OnActorKilled(AActor* VictimActor, AActor* Killer);
 
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 

@@ -54,11 +54,6 @@ void AVSK_GameModeBase::StartPlay()
 
 	GetWorldTimerManager().SetTimer(TimerHandle_SpawnBots, this, &AVSK_GameModeBase::SpawnBotTimerElapsed, SpawnTimerInterval, true);
 
-	//UEnvQueryInstanceBlueprintWrapper* PowerupSpawnQueryInstance = UEnvQueryManager::RunEQSQuery(this, PowerupSpawnQuery, this, EEnvQueryRunMode::AllMatching, nullptr);
-	//if (ensure(PowerupSpawnQueryInstance))
-	//{
-	//	PowerupSpawnQueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &AVSK_GameModeBase::OnPowerupSpawnQueryCompleted);
-	//}
 	if (ensure(PowerupClasses.Num() > 0))
 	{
 		// Run EQS to find potential power-up spawn locations
@@ -129,7 +124,6 @@ void AVSK_GameModeBase::SpawnBotTimerElapsed()
 	{
 		QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &AVSK_GameModeBase::OnSpawnBotQueryCompleted);	
 	}
-
 }
 
 void AVSK_GameModeBase::OnSpawnBotQueryCompleted(UEnvQueryInstanceBlueprintWrapper* SpawnBotQueryInstance, EEnvQueryStatus::Type QueryStatus)
@@ -162,8 +156,6 @@ void AVSK_GameModeBase::OnSpawnBotQueryCompleted(UEnvQueryInstanceBlueprintWrapp
 			}
 
 		}
-
-
 		DrawDebugSphere(GetWorld(), Locations[0], 50.0f, 20, FColor::Blue, false, 60.0f);
 	}
 }
@@ -193,8 +185,6 @@ void AVSK_GameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnL
 			}
 		}
 	}
-
-
 }
 
 
@@ -258,16 +248,6 @@ void AVSK_GameModeBase::OnPowerupSpawnQueryCompleted(UEnvQueryInstanceBlueprintW
 	}
 }
 
-void AVSK_GameModeBase::RespawnPlayerElapsed(AController* Controller)
-{
-	if (ensure(Controller))
-	{
-		Controller->UnPossess();
-
-		RestartPlayer(Controller);
-	}
-
-}
 
 void AVSK_GameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 {
@@ -294,7 +274,15 @@ void AVSK_GameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 		}
 	}
 }
+void AVSK_GameModeBase::RespawnPlayerElapsed(AController* Controller)
+{
+	if (ensure(Controller))
+	{
+		Controller->UnPossess();
 
+		RestartPlayer(Controller);
+	}
+}
 
 void AVSK_GameModeBase::WriteSaveGame()
 {

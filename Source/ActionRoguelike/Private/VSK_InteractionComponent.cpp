@@ -29,7 +29,6 @@ void UVSK_InteractionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
 	
 }
 
