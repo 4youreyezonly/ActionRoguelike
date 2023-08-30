@@ -29,4 +29,5 @@ public:
 		return FPrimaryAssetId("Monsters", GetFName());
 	}
 
+
 };

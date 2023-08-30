@@ -46,6 +46,8 @@ void UVSK_ActionEffect::StopAction_Implementation(AActor* Instigator)
 
 	GetWorld()->GetTimerManager().ClearTimer(PeriodHandle);
 	GetWorld()->GetTimerManager().ClearTimer(DurationHandle);
+
+
 }
 
 float UVSK_ActionEffect::GetTimeRemaining() const

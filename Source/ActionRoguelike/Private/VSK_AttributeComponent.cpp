@@ -10,22 +10,18 @@ static TAutoConsoleVariable<float> CVarDamageMultiplier(TEXT("VSK.DamageMultplie
 // Sets default values for this component's properties
 UVSK_AttributeComponent::UVSK_AttributeComponent()
 {
-	HealthMax = 100;
-	Health = HealthMax;
-
-	Rage = 0;
-	RageMax = 100;
 	SetIsReplicatedByDefault(true);
 
+
 }
-//#if WITH_EDITOR
-//void UVSK_AttributeComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-//{
-//	Super::PostEditChangeProperty(PropertyChangedEvent);
-//
-//	Health = HealthMax;
-//}
-//#endif
+#if WITH_EDITOR
+void UVSK_AttributeComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	Health = HealthMax;
+}
+#endif
 UVSK_AttributeComponent* UVSK_AttributeComponent::GetAttributeComponent(AActor* FromActor)
 {
 	if (FromActor)
@@ -80,6 +76,8 @@ bool UVSK_AttributeComponent::ApplyHealthChange(AActor* InstigatorActor,float De
 		}
 	}
 
+	//OnHealthChanged.Broadcast(instigatorActor,this,Health,ActualDelta);
+
 	return ActualDelta != 0;
 }
 
@@ -118,6 +116,8 @@ bool UVSK_AttributeComponent::ApplyRageChange(AActor* InstigatorActor, float Del
 		}
 	}
 
+	//OnRageChanged.Broadcast(instigatorActor,this,Rage,ActualDelta);
+
 	return ActualDelta != 0;
 }
 
@@ -126,7 +126,7 @@ bool UVSK_AttributeComponent::IsAlive() const
 	return Health > 0.0f;
 }
 
-bool UVSK_AttributeComponent::IsFullHealth() const
+bool UVSK_AttributeComponent::IsFullHealthAlive() const
 {
 	return Health==HealthMax;
 }
@@ -155,9 +155,8 @@ void UVSK_AttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 
 	DOREPLIFETIME(UVSK_AttributeComponent, Health);
 	DOREPLIFETIME(UVSK_AttributeComponent, HealthMax);
-	DOREPLIFETIME(UVSK_AttributeComponent, Rage);
-	DOREPLIFETIME(UVSK_AttributeComponent, RageMax);
 
+	//DOREPLIFETIME_CONDITION(UVSK_AttributeComponent, HealthMax,COND_OwnerOnly);
 }
 
 void UVSK_AttributeComponent::MulticastHealthChanged_Implementation(AActor* InstigatorActor, float NewHealth, float Delta)

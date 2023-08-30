@@ -5,67 +5,41 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Particles/ParticleSystemComponent.h"
-#include "Kismet/GameplayStatics.h"
-#include "Components/AudioComponent.h"
-#include "Sound/SoundCue.h"
 
 // Sets default values
 AVSK_Projectile::AVSK_Projectile()
 {
+ 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+
 	SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
 	SphereComp->SetCollisionProfileName("Projectile");
 	RootComponent = SphereComp;
 
 	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
-	EffectComp->SetupAttachment(RootComponent);
+	EffectComp->SetupAttachment(SphereComp);
 
-	AudioComp = CreateDefaultSubobject<UAudioComponent>("AudioComp");
-	AudioComp->SetupAttachment(RootComponent);
 
-	MovementComp = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMoveComp");
+	MovementComp = CreateDefaultSubobject<UProjectileMovementComponent>("MovementComp");
+
+	MovementComp->InitialSpeed = 1000.0f;
 	MovementComp->bRotationFollowsVelocity = true;
 	MovementComp->bInitialVelocityInLocalSpace = true;
-	MovementComp->ProjectileGravityScale = 0.0f;
-	MovementComp->InitialSpeed = 8000;
-
-	ImpactShakeInnerRadius = 0.0f;
-	ImpactShakeOuterRadius = 1500.0f;
 
 	bReplicates = true;
 }
 
-void AVSK_Projectile::PostInitializeComponents()
+// Called when the game starts or when spawned
+void AVSK_Projectile::BeginPlay()
 {
-	Super::PostInitializeComponents();
-	//SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
-
-	// More consistent to bind here compared to Constructor which may fail to bind if Blueprint was created before adding this binding (or when using hotreload)
-	// PostInitializeComponent is the preferred way of binding any events.
-	SphereComp->OnComponentHit.AddDynamic(this, &AVSK_Projectile::OnActorHit);
+	Super::BeginPlay();
+	
 }
 
-
-void AVSK_Projectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+// Called every frame
+void AVSK_Projectile::Tick(float DeltaTime)
 {
-	Explode();
+	Super::Tick(DeltaTime);
+
 }
-
-
-// _Implementation from it being marked as BlueprintNativeEvent
-void AVSK_Projectile::Explode_Implementation()
-{
-	// Check to make sure we aren't already being 'destroyed'
-	// Adding ensure to see if we encounter this situation at all
-	if (ensure(IsValid(this)))
-	{
-		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
-
-		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
-
-		UGameplayStatics::PlayWorldCameraShake(this, ImpactShake, GetActorLocation(), ImpactShakeInnerRadius, ImpactShakeOuterRadius);
-
-		Destroy();
-	}
-}
-
 
