@@ -54,7 +54,7 @@ protected:
 
 	void SprintStop();
 
-	void JumpStart();
+	void JumpStart();														    
 
 	void JumpEnd();
 
