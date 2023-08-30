@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 
-#define ECC_AIPawn ECC_GameTraceChannel1
-
 DECLARE_STATS_GROUP(TEXT("VSK_Game"), STATGROUP_VSK, STATCAT_Advanced);
 
 

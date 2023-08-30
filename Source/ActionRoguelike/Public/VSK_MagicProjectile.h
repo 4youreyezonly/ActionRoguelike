@@ -17,6 +17,9 @@ class ACTIONROGUELIKE_API AVSK_MagicProjectile : public AVSK_Projectile
 	GENERATED_BODY()
 	
 protected:	
+	// Sets default values for this actor's properties
+ 	// Called every frame
+	virtual void Tick(float DeltaTime);
 
 	UPROPERTY(EditAnywhere,Category="Attack")
 		float DamageAmount;
@@ -25,15 +28,26 @@ protected:
 		float RageAmount;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Attack")
+
+		UParticleSystem* ExplodeFX;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+		class USoundBase* HitSound;
+
+protected:
+
+	UPROPERTY(EditDefaultsOnly, Category = "Attack")
 		FGameplayTag ParryTag;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Attack")
-		TSubclassOf<UVSK_ActionEffect> BurningActionClass;
-
 	UFUNCTION()
 		void OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	virtual void PostInitializeComponents() override;
+	UPROPERTY(EditDefaultsOnly, Category = "Attack")
+		TSubclassOf<UVSK_ActionEffect> BurningActionClass;
+
+
+	// Called when the game starts or when spawned
+	virtual void BeginPlay();
 
 public:	
 

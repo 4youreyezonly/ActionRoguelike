@@ -47,7 +47,7 @@ void AVSK_PlayerState::LoadPlayerState_Implementation(UVSK_SaveGame* SaveObject)
 {
 	if (SaveObject)
 	{
-		//Credits = SaveObject->Credits;这个没有触发OnCreditsChanged委托所以不行
+		//Credits = SaveObject->Credits;
 		AddCredits(SaveObject->Credits);
 	}
 

@@ -14,6 +14,19 @@ class ACTIONROGUELIKE_API UVSK_ActionEffect : public UVSK_Action
 {
 	GENERATED_BODY()
 
+public:
+	UVSK_ActionEffect();
+
+	virtual void StartAction_Implementation(AActor* Instigator)override;
+
+	virtual void StopAction_Implementation(AActor* Instigator)override;
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+		float GetTimeRemaining()const;
+
+
+
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect")
 		float Duration;
@@ -27,14 +40,7 @@ protected:
 		void ExecutePeriodEffect(AActor* Instigator);
 
 
-public:
-	UVSK_ActionEffect();
 
-	virtual void StartAction_Implementation(AActor* Instigator)override;
 
-	virtual void StopAction_Implementation(AActor* Instigator)override;
-
-	UFUNCTION(BlueprintCallable, Category = "Action")
-		float GetTimeRemaining()const;
 	
 };

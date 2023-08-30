@@ -27,8 +27,8 @@ void UVSK_Action::StartAction_Implementation(AActor* Instigator)
 		TimeStarted = GetWorld()->TimeSeconds;
 	}
 
-	GetOwningComponent()->OnActionStarted.Broadcast(GetOwningComponent(), this);
 
+	GetOwningComponent()->OnActionStarted.Broadcast(GetOwningComponent(), this);
 }
 
 

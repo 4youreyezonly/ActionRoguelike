@@ -15,6 +15,10 @@ class ACTIONROGUELIKE_API UVSK_AttributeComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
+	// Sets default values for this component's properties
+	UFUNCTION(BlueprintCallable)
+	bool Kill(AActor* InstigatorActor);
+
 	UVSK_AttributeComponent();
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
@@ -42,9 +46,9 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 		void MulticastRageChanged(AActor* InstigatorActor, float NewHealth, float Delta);
 
-//#if WITH_EDITOR
-//	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-//#endif
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 
 public:												
 	UPROPERTY(BlueprintAssignable,Category = "Attributes")
@@ -59,13 +63,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 		bool ApplyRageChange(AActor* InstigatorActor, float Delta);
 
-
-	UFUNCTION(BlueprintCallable)
-		bool Kill(AActor* InstigatorActor);
 	UFUNCTION(BlueprintCallable,Category = "Attributes")
 		bool IsAlive()const;
 	UFUNCTION(Category = "Attributes")
-		bool IsFullHealth()const;
+		bool IsFullHealthAlive()const;
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 		float GetHealthMax()const;
 	UFUNCTION(BlueprintCallable,Category = "Attributes")

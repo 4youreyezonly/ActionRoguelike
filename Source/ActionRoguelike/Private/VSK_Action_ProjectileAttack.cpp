@@ -53,7 +53,7 @@ void UVSK_Action_ProjectileAttack::AttackDelay_Elapsed(AVSK_Character* Instigato
 
 		FCollisionObjectQueryParams ObjParams;
 		ObjParams.AddObjectTypesToQuery(ECC_WorldStatic);
-		ObjParams.AddObjectTypesToQuery(ECC_Pawn);
+		ObjParams.AddObjectTypesToQuery(ECC_AIPawn);
 
 		FVector TraceStart = InstigatorCharacter->GetPawnViewLocation()+ (InstigatorCharacter->GetControlRotation().Vector() * 30);
 
