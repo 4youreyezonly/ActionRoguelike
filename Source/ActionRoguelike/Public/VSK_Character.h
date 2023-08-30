@@ -65,8 +65,14 @@ protected:
 	void SprintStop();
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 	void JumpStart();														    
 
+=======
+	//跳跃开始
+	void JumpStart();
+	//跳跃结束
+>>>>>>> parent of 9d1e7dc (Notebook Down!)
 =======
 	//跳跃开始
 	void JumpStart();
